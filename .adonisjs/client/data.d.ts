@@ -5,21 +5,21 @@
 
 /// <reference path="./manifest.d.ts" />
 import type { InferData, InferVariants } from '@adonisjs/core/types/transformers'
-import type UserTransformer from '#transformers/user_transformer'
-import type RoleTransformer from '#transformers/role_transformer'
 import type PermissionTransformer from '#transformers/permission_transformer'
+import type RoleTransformer from '#transformers/role_transformer'
+import type UserTransformer from '#transformers/user_transformer'
 
 export namespace Data {
-  export type User = InferData<UserTransformer>
-  export namespace User {
-    export type Variants = InferVariants<UserTransformer>
+  export type Permission = InferData<PermissionTransformer>
+  export namespace Permission {
+    export type Variants = InferVariants<PermissionTransformer>
   }
   export type Role = InferData<RoleTransformer>
   export namespace Role {
     export type Variants = InferVariants<RoleTransformer>
   }
-  export type Permission = InferData<PermissionTransformer>
-  export namespace Permission {
-    export type Variants = InferVariants<PermissionTransformer>
+  export type User = InferData<UserTransformer>
+  export namespace User {
+    export type Variants = InferVariants<UserTransformer>
   }
 }

@@ -1,122 +1,48 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import User from '#models/user'
 import { loginValidator } from '#validators/auth/login'
 import { registerValidator } from '#validators/auth/register';
-import Role from '#models/role';
-import { RoleEnum } from '../../shared/enums/role_enum.ts';
 import UserTransformer from '#transformers/user_transformer';
+import { inject } from '@adonisjs/core'
+import AuthService from '#services/auth_services';
 
+@inject()
 export default class AuthController {
 
-    async register({request, response, serialize, auth}: HttpContext) {
+    constructor(protected authService: AuthService) {}
+
+    async register({request, response, serialize}: HttpContext) {
         const payload = await request.validateUsing(registerValidator)
 
-        const existingUser = await User.findBy('email', payload.email)
-        if (existingUser) {
-            return response.conflict({
-                message: 'Email already registered'
-            })
-        }
-
-        const memberRole = await Role.findBy('slug', RoleEnum.MEMBER)
-        if (!memberRole) {
-            return response.internalServerError({
-                message: 'Default member has error'
-            })
-        }
-
-        const user = await User.create({
-            fullName: payload.full_name,
-            email: payload.email,
-            password: payload.password,
-            isActive: true
-        })
-
-        await user.related('roles').sync([memberRole.id])
-
-        const freshUser = await User.query()
-            .where('id', user.id)
-            .preload('roles', (roleQuery) => {
-                roleQuery.preload('permissions')
-            })
-            .firstOrFail()
-
-        const token = await auth.use('api').createToken(freshUser)
-
-        /* const permissions = [
-            ...new Set(
-                freshUser.roles.flatMap((role) =>
-                    role.permissions.map((permission) => permission.slug)
-                )
-            ),
-        ] */
+        const result = await this.authService.register(payload)
 
         return response.created({
             message: 'Register successful',
             data: {
-                token: token.value!.release(),
-                user:serialize(UserTransformer.transform(freshUser)),
+                token: result.token,
+                user: serialize(UserTransformer.transform(result.user)),
             },
         })
     }
 
-    async login({request, response, serialize}: HttpContext) {
+    async login({request, response, auth, serialize}: HttpContext) {
         const payload = await request.validateUsing(loginValidator)
 
-        const user = await User.verifyCredentials(payload.email, payload.password)
-
-        if (!user.isActive) {
-            return response.status(403).json({
-                message: 'User account is inactive'
-            })
-        }
-
-        await user.load('roles', (roleQuery) => {
-            roleQuery.preload('permissions')
-        })
-
-        const token = await User.accessTokens.create(user, ['*'], {
-            name: 'api-login'
-        })
-
-        /* const permissions = [
-            ...new Set(
-                freshUser.roles.flatMap((role) =>
-                    role.permissions.map((permission) => permission.slug)
-                )
-            ),
-        ] */
+        const result = await this.authService.login(payload)
 
         return response.ok({
-            message: 'Login successful',
+            message: 'Login successful.',
             data: {
-                token: token.value!.release(),
-                user: serialize(UserTransformer.transform(user)),
+                token: result.token,
+                user: serialize(UserTransformer.transform(result.user)),
             },
         })
     }
 
     async me({ auth, response, serialize }: HttpContext) {
-        const authUser = auth.user!
-
-        const user = await User.query()
-            .where('id', authUser.id)
-            .preload('roles', (roleQuery) => {
-                roleQuery.preload('permissions')
-            })
-            .firstOrFail()
-
-        /* const permissions = [
-            ...new Set(
-                freshUser.roles.flatMap((role) =>
-                    role.permissions.map((permission) => permission.slug)
-                )
-            ),
-        ] */
-
+        const user = await this.authService.me(auth.user!.id)
 
         return response.ok({
-            message: 'Profile fetched successfully',
+            message: 'Success.',
             data: serialize(UserTransformer.transform(user)),
         })
     }
@@ -125,7 +51,7 @@ export default class AuthController {
         await auth.use('api').invalidateToken()
 
         return response.ok({
-            message: 'Logout successful',
+            message: 'Logout successful.',
         })
     }
 }
