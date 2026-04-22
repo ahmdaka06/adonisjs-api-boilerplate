@@ -1,6 +1,8 @@
 import app from '@adonisjs/core/services/app'
 import { type HttpContext, ExceptionHandler } from '@adonisjs/core/http'
+import { errors as authErrors } from '@adonisjs/auth'
 import ApiExceptionHandler from '#exceptions/validation_handler'
+import AppException from './app_exception.ts'
 
 export default class HttpExceptionHandler extends ExceptionHandler {
   /**
@@ -14,6 +16,10 @@ export default class HttpExceptionHandler extends ExceptionHandler {
    * response to the client
    */
   async handle(error: unknown, ctx: HttpContext) {
+    if (error instanceof authErrors.E_INVALID_CREDENTIALS) {
+      throw new AppException('Invalid credentials.', 400)
+    }
+
     const handled = ApiExceptionHandler.handle(error, ctx)
     if (handled) {
       return handled

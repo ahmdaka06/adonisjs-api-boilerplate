@@ -15,35 +15,52 @@ export default class AuthController {
 
         const result = await this.authService.register(payload)
 
+        const serializedUser = await serialize(UserTransformer.transform(result.user))
+
         return response.created({
             message: 'Register successful',
             data: {
                 token: result.token,
-                user: serialize(UserTransformer.transform(result.user)),
+                user: {
+                    ...serializedUser.data,
+                    permissions: result.permissions,
+                },
             },
         })
     }
 
-    async login({request, response, auth, serialize}: HttpContext) {
+    async login({request, response, serialize}: HttpContext) {
         const payload = await request.validateUsing(loginValidator)
 
         const result = await this.authService.login(payload)
+        
+        const serializedUser = await serialize(UserTransformer.transform(result.user))
 
         return response.ok({
             message: 'Login successful.',
             data: {
                 token: result.token,
-                user: serialize(UserTransformer.transform(result.user)),
+                user: {
+                    ...serializedUser.data,
+                    permissions: result.permissions,
+                },
             },
         })
     }
 
     async me({ auth, response, serialize }: HttpContext) {
-        const user = await this.authService.me(auth.user!.id)
+        const result = await this.authService.me(auth.user!.id)
+
+        const serializedUser = await serialize(UserTransformer.transform(result.user))
 
         return response.ok({
             message: 'Success.',
-            data: serialize(UserTransformer.transform(user)),
+            data: {
+                user: {
+                    ...serializedUser.data,
+                    permissions: result.permissions,
+                },
+            }
         })
     }
 

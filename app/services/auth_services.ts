@@ -43,10 +43,11 @@ export default class AuthService {
 
         const freshUser = await this.getAuthenticatedUserById(user.id)
         const token = await this.ctx.auth.use('api').createToken(freshUser)
-        
+
         return {
             token: token.value!.release(),
             user: freshUser,
+            permissions: this.extractPermissions(freshUser),
         }
     }
 
@@ -63,11 +64,21 @@ export default class AuthService {
         return {
             token: token.value!.release(),
             user: freshUser,
+            permissions: this.extractPermissions(freshUser),
         }
     }
 
     async me(userId: number) {
-        return this.getAuthenticatedUserById(userId)
+        const user = await this.getAuthenticatedUserById(userId)
+
+        return {
+            user,
+            permissions: this.extractPermissions(user),
+        }
+    }
+
+    async logout() {
+        await this.ctx.auth.use('api').invalidateToken()
     }
 
     private async getAuthenticatedUserById(userId: number) {
@@ -77,5 +88,15 @@ export default class AuthService {
                 roleQuery.preload('permissions')
             })
             .firstOrFail()
+    }
+
+    private extractPermissions(user: any) {
+        return [
+            ...new Set(
+                (user.roles ?? []).flatMap((role: any) =>
+                    (role.permissions ?? []).map((permission: any) => permission.slug)
+                )
+            ),
+        ]
     }
 }
