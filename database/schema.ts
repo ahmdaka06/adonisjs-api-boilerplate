@@ -32,6 +32,66 @@ export class AuthAccessTokenSchema extends BaseModel {
   declare updatedAt: DateTime | null
 }
 
+export class PermissionSchema extends BaseModel {
+  static $columns = ['createdAt', 'description', 'id', 'slug', 'updatedAt'] as const
+  $columns = PermissionSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare slug: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class RolePermissionSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'permissionId', 'roleId', 'updatedAt'] as const
+  $columns = RolePermissionSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare permissionId: bigint | number
+  @column()
+  declare roleId: bigint | number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class RoleSchema extends BaseModel {
+  static $columns = ['createdAt', 'description', 'id', 'slug', 'updatedAt'] as const
+  $columns = RoleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare slug: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
+export class UserRoleSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'roleId', 'updatedAt', 'userId'] as const
+  $columns = UserRoleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: number
+  @column()
+  declare roleId: bigint | number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: bigint | number
+}
+
 export class UserSchema extends BaseModel {
   static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
   $columns = UserSchema.$columns
