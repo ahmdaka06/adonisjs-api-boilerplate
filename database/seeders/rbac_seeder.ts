@@ -1,8 +1,11 @@
-import Role from '#models/role'
-import Permission from '#models/permission'
-import User from '#models/user'
 import db from '@adonisjs/lucid/services/db'
-import { BaseSeeder } from '@adonisjs/lucid/seeders'
+import {BaseSeeder} from '@adonisjs/lucid/seeders'
+
+import Permission from '#models/permission'
+import Role from '#models/role'
+import User from '#models/user'
+import { PermissionEnum } from '../../shared/enums/permission_enum.ts'
+import { RoleEnum } from '../../shared/enums/role_enum.ts'
 
 export default class extends BaseSeeder {
   async run() {
@@ -10,77 +13,77 @@ export default class extends BaseSeeder {
       const permissions = [
         {
           name: 'View Dashboard',
-          slug: 'dashboard.view',
+          slug: PermissionEnum.DASHBOARD_VIEW,
           description: 'Can view dashboard',
         },
         {
           name: 'View Users',
-          slug: 'user.view',
+          slug: PermissionEnum.USER_VIEW,
           description: 'Can view user list and detail',
         },
         {
           name: 'Create User',
-          slug: 'user.create',
+          slug: PermissionEnum.USER_CREATE,
           description: 'Can create user',
         },
         {
           name: 'Update User',
-          slug: 'user.update',
+          slug: PermissionEnum.USER_UPDATE,
           description: 'Can update user',
         },
         {
           name: 'Delete User',
-          slug: 'user.delete',
+          slug: PermissionEnum.USER_DELETE,
           description: 'Can delete user',
         },
         {
           name: 'Assign User Role',
-          slug: 'user.assign-role',
+          slug: PermissionEnum.USER_ASSIGN_ROLE,
           description: 'Can assign roles to user',
         },
         {
           name: 'View Roles',
-          slug: 'role.view',
+          slug: PermissionEnum.ROLE_VIEW,
           description: 'Can view roles',
         },
         {
           name: 'Create Role',
-          slug: 'role.create',
+          slug: PermissionEnum.ROLE_CREATE,
           description: 'Can create role',
         },
         {
           name: 'Update Role',
-          slug: 'role.update',
+          slug: PermissionEnum.ROLE_UPDATE,
           description: 'Can update role',
         },
         {
           name: 'Delete Role',
-          slug: 'role.delete',
+          slug: PermissionEnum.ROLE_DELETE,
           description: 'Can delete role',
         },
         {
           name: 'Assign Role Permission',
-          slug: 'role.assign-permission',
+          slug: PermissionEnum.ROLE_ASSIGN_PERMISSION,
           description: 'Can assign permissions to role',
         },
         {
           name: 'View Permissions',
-          slug: 'permission.view',
+          slug: PermissionEnum.PERMISSION_VIEW,
           description: 'Can view permissions',
         },
         {
           name: 'Create Permission',
-          slug: 'permission.create',
+          slug: PermissionEnum.PERMISSION_CREATE,
           description: 'Can create permission',
         },
         {
           name: 'Update Permission',
-          slug: 'permission.update',
+          slug: PermissionEnum.PERMISSION_UPDATE,
           description: 'Can update permission',
         },
         {
           name: 'Delete Permission',
-          slug: 'permission.delete',
+          slug: PermissionEnum.PERMISSION_DELETE,
           description: 'Can delete permission',
         },
       ]
@@ -93,24 +96,25 @@ export default class extends BaseSeeder {
           permission,
           { client: trx }
         )
+
         createdPermissions.push(item)
       }
 
       const superAdminRole = await Role.firstOrCreate(
-        { slug: 'super-admin' },
+        { slug: RoleEnum.SUPER_ADMIN },
         {
           name: 'Super Admin',
-          slug: 'super-admin',
+          slug: RoleEnum.SUPER_ADMIN,
           description: 'System super administrator',
         },
         { client: trx }
       )
 
       const memberRole = await Role.firstOrCreate(
-        { slug: 'member' },
+        { slug: RoleEnum.MEMBER },
         {
           name: 'Member',
-          slug: 'member',
+          slug: RoleEnum.MEMBER,
           description: 'Default member role',
         },
         { client: trx }
@@ -120,8 +124,9 @@ export default class extends BaseSeeder {
       memberRole.useTransaction(trx)
 
       const allPermissionIds = createdPermissions.map((permission) => permission.id)
+
       const memberPermissionIds = createdPermissions
-        .filter((permission) => permission.slug === 'dashboard.view')
+        .filter((permission) => permission.slug === PermissionEnum.DASHBOARD_VIEW)
         .map((permission) => permission.id)
 
       await superAdminRole.related('permissions').sync(allPermissionIds)
@@ -138,8 +143,22 @@ export default class extends BaseSeeder {
         { client: trx }
       )
 
+      const memberUser = await User.firstOrCreate(
+        { email: 'member@example.com' },
+        {
+          fullName: 'Member User',
+          email: 'member@example.com',
+          password: 'password',
+          isActive: true,
+        },
+        { client: trx }
+      )
+
       adminUser.useTransaction(trx)
+      memberUser.useTransaction(trx)
+
       await adminUser.related('roles').sync([superAdminRole.id])
+      await memberUser.related('roles').sync([memberRole.id])
     })
   }
 }

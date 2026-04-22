@@ -33,7 +33,7 @@ export class AuthAccessTokenSchema extends BaseModel {
 }
 
 export class PermissionSchema extends BaseModel {
-  static $columns = ['createdAt', 'description', 'id', 'slug', 'updatedAt'] as const
+  static $columns = ['createdAt', 'description', 'id', 'name', 'slug', 'updatedAt'] as const
   $columns = PermissionSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -41,6 +41,8 @@ export class PermissionSchema extends BaseModel {
   declare description: string | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare name: string
   @column()
   declare slug: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -55,15 +57,15 @@ export class RolePermissionSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare permissionId: bigint | number
+  declare permissionId: number
   @column()
-  declare roleId: bigint | number
+  declare roleId: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }
 
 export class RoleSchema extends BaseModel {
-  static $columns = ['createdAt', 'description', 'id', 'slug', 'updatedAt'] as const
+  static $columns = ['createdAt', 'description', 'id', 'name', 'slug', 'updatedAt'] as const
   $columns = RoleSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime | null
@@ -71,6 +73,8 @@ export class RoleSchema extends BaseModel {
   declare description: string | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare name: string
   @column()
   declare slug: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
@@ -85,15 +89,15 @@ export class UserRoleSchema extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
   @column()
-  declare roleId: bigint | number
+  declare roleId: number
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
   @column()
-  declare userId: bigint | number
+  declare userId: number
 }
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
+  static $columns = ['createdAt', 'email', 'fullName', 'id', 'isActive', 'password', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -103,6 +107,8 @@ export class UserSchema extends BaseModel {
   declare fullName: string | null
   @column({ isPrimary: true })
   declare id: number
+  @column()
+  declare isActive: boolean
   @column({ serializeAs: null })
   declare password: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })

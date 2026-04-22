@@ -3,6 +3,7 @@ import User from '#models/user'
 import { loginValidator } from '#validators/auth/login'
 import { registerValidator } from '#validators/auth/register';
 import Role from '#models/role';
+import { RoleEnum } from '../../shared/enums/role_enum.ts';
 
 export default class AuthController {
 
@@ -16,7 +17,7 @@ export default class AuthController {
             })
         }
 
-        const memberRole = await Role.findBy('slug', 'member')
+        const memberRole = await Role.findBy('slug', RoleEnum.MEMBER)
         if (!memberRole) {
             return response.internalServerError({
                 message: 'Default member has error'

@@ -6,8 +6,9 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
+
       table
-        .bigInteger('user_id')
+        .integer('user_id')
         .unsigned()
         .notNullable()
         .references('id')
@@ -15,7 +16,7 @@ export default class extends BaseSchema {
         .onDelete('CASCADE')
 
       table
-        .bigInteger('role_id')
+        .integer('role_id')
         .unsigned()
         .notNullable()
         .references('id')
